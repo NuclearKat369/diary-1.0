@@ -1,0 +1,64 @@
+package sample;
+
+import java.util.StringTokenizer;
+
+public class Dates {
+
+    private int year, day, monthNumber, hour, minute;
+    private String month, dayOfWeek;
+
+    public Dates(){
+
+    }
+
+    public Dates(int year, String month, int day) {
+        this.year = year;
+        this.month = month;
+        this.day = day;
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
+    }
+
+    public int getDay() {
+        return day;
+    }
+
+    public void setDay(int day) {
+        this.day = day;
+    }
+
+    public String getMonth() {
+        return month;
+    }
+
+    public void setMonth(String month) {
+        this.month = month;
+    }
+
+    public String getDayOfWeek() {
+        return dayOfWeek;
+    }
+
+    public void setDayOfWeek(String dayOfWeek) {
+        this.dayOfWeek = dayOfWeek;
+    }
+    public void setMonthNumber(int monthNumber){
+        this.monthNumber = monthNumber;
+    }
+
+    public int getMonthNumber(){
+        return monthNumber;
+    }
+
+//    public String getMonthByNumber(int number){
+//
+//    }
+
+
+}

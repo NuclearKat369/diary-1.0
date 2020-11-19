@@ -203,13 +203,7 @@ public class Main extends Application {
                 dow.add(label, dowColInd, 0);
             }
             t.add(dow, colIndex, rowIndex);
-//            str = "_____________________________" + "\n" +
-//                    " Mon Tue Wed Thu Fri Sat Sun";
-//            label = new Label(str);
-//            label.setPadding(new Insets(1));
-//            label.setTextAlignment(TextAlignment.CENTER);
-//            GridPane.setHalignment(label, HPos.LEFT);
-//            t.add(label, colIndex, rowIndex);
+
             rowIndex++;
 
             System.out.println("Row: " + rowIndex + " Column: " + colIndex);
@@ -220,6 +214,7 @@ public class Main extends Application {
             //days of month grid in the main grid
             GridPane datesTable = new GridPane();
             datesTable.setGridLinesVisible(true);
+
             for (int w = 0; w < 7; w++){
                 datesTable.getColumnConstraints().add(new ColumnConstraints(30));
             }
@@ -232,7 +227,7 @@ public class Main extends Application {
 
 
                 n += cal.withMonth(month).withDayOfMonth(1).getDayOfWeek().getValue() - 1;
-//                System.out.println("dow CAL " + cal.withMonth(month).withDayOfMonth(1).getDayOfWeek().getValue());
+
                 dates.setDayOfWeek(cal.withMonth(dates.getMonthNumber()).withDayOfMonth(1).getDayOfWeek().toString());
 
                 colIndexDates = n;
@@ -260,6 +255,13 @@ public class Main extends Application {
                         label.setTextAlignment(TextAlignment.CENTER);
                         GridPane.setHalignment(label, HPos.LEFT);
                         if (colIndexDates > 4) label.setTextFill(Color.RED);
+                        //todo set the bg for "today"
+                        if (dates.getYear() == LocalDateTime.now().getYear() &
+                                dates.getMonth().equalsIgnoreCase(LocalDateTime.now().getMonth().toString()) == true &
+                                dates.getDay() == LocalDateTime.now().getDayOfMonth())
+                            label.setBackground(new Background
+                                    (new BackgroundFill
+                                            (Color.LIGHTGREEN, CornerRadii.EMPTY, Insets.EMPTY)));
                         datesTable.add(label, colIndexDates, rowIndexDates);
                         colIndexDates = 0;
                         rowIndexDates++;
@@ -272,6 +274,13 @@ public class Main extends Application {
                         label.setTextAlignment(TextAlignment.CENTER);
                         GridPane.setHalignment(label, HPos.LEFT);
                         if (colIndexDates > 4) label.setTextFill(Color.RED);
+                        //todo set the bg for "today"
+                        if (dates.getYear() == LocalDateTime.now().getYear() &
+                                dates.getMonth().equalsIgnoreCase(LocalDateTime.now().getMonth().toString()) == true &
+                                dates.getDay() == LocalDateTime.now().getDayOfMonth())
+                            label.setBackground(new Background
+                                    (new BackgroundFill
+                                            (Color.LIGHTGREEN, CornerRadii.EMPTY, Insets.EMPTY)));
                         datesTable.add(label, colIndexDates, rowIndexDates);
                         colIndexDates++;
                         System.out.printf("%4d", dates.getDay());
@@ -281,8 +290,11 @@ public class Main extends Application {
                 break;
             }
 
+            System.out.println("CHECK YEAR: " + dates.getYear() + "\n" + "CHECK MONTH: " +
+                    dates.getMonth() + "\n" + "CHECK DAY: " + dates.getDay() +
+                    LocalDateTime.now().getMonth());
             System.out.println("Row: " + rowIndex + " Column: " + colIndex);
-            datesTable.setAlignment(Pos.CENTER);
+            datesTable.setAlignment(Pos.TOP_LEFT);
             t.add(datesTable, colIndex, rowIndex);
         }
 

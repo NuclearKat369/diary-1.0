@@ -1,40 +1,47 @@
 package sample;
 
-import java.io.*;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.css.PseudoClass;
-import javafx.geometry.HPos;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.geometry.Side;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.*;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TextArea;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
-public class Main extends Application {
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.io.IOException;
+
+//import org.w3c.dom.Node;
+
+
+public class Main extends Application  {
+
+//    File xmlFile = new File("appointments.xml");
 
     private final LocalTime firstSlotStart = LocalTime.of(0, 0);
     private final Duration slotLength = Duration.ofMinutes(30);
@@ -43,7 +50,6 @@ public class Main extends Application {
     private static LocalDateTime cal;
     Dates dates = new Dates();
 
-
 //    private static final PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
 
     private final List<TimeSlot> timeSlots = new ArrayList<>();
@@ -51,24 +57,21 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws IOException {
 
-
-
+        AnchorPane ap = new AnchorPane();
         TabPane tp = new TabPane();
+        Button addEvent = new Button("Добавить событие");
+
         tp.setLayoutX(10);
         tp.setLayoutY(10);
-        tp.setCursor(Cursor.HAND);
-        DropShadow effect=new DropShadow();
-        effect.setOffsetX(8);
-        effect.setOffsetY(8);
-        tp.setEffect(effect);
-        tp.setStyle("-fx-border-width:4pt;-fx-border-color:lightblue;");
+        tp.setCursor(Cursor.DEFAULT);
+
+        tp.setStyle("-fx-border-width:4pt;-fx-border-color:royalblue;");
         tp.setPrefSize(300, 300);
         tp.setTooltip(new Tooltip("Панель с вкладками"));
         tp.setSide(Side.TOP);
         tp.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         tp.setTabMinHeight(20);
         tp.setTabMinWidth(100);
-
 
 // Вкладка №1
         Tab tabGrid = new Tab("Расписание");
@@ -124,9 +127,6 @@ public class Main extends Application {
             calendarView.add(label, 0, slotIndex);
             slotIndex++ ;
         }
-        ScrollPane scroller = new ScrollPane(calendarView);
-        rootGrid.getChildren().add(scroller);
-
 
 // Вкладка №2
         Tab tabCal = new Tab("Календарь");
@@ -144,6 +144,8 @@ public class Main extends Application {
         label.setPadding(new Insets(1));
         label.setTextAlignment(TextAlignment.CENTER);
         GridPane.setHalignment(label, HPos.CENTER);
+        label.setStyle("-fx-font-weight: bold");
+
         int colIndex = 0;
         int rowIndex = 0;
 
@@ -154,10 +156,6 @@ public class Main extends Application {
         for (int month = 1; month <= 12; month++) {
 
 
-//            if (statCal.isLeapYear(statCal.YEAR) && month == 1) {     //проверяет год на високосность
-//                days[month] = 29;
-//            }
-
                 //month name
                 dates.setMonth(cal.withMonth(month).getMonth().getDisplayName(TextStyle.FULL, Locale.UK));
                 dates.setMonthNumber(month);
@@ -165,6 +163,8 @@ public class Main extends Application {
                 label = new Label(str);
                 label.setPadding(new Insets(1));
                 label.setTextAlignment(TextAlignment.CENTER);
+                label.setStyle("-fx-font-weight: bold; -fx-background-color: PaleTurquoise");
+
                 GridPane.setHalignment(label, HPos.LEFT);
             if (month % 3 != 0) {
                 t.add(label, colIndexMonth, rowIndexMonth);
@@ -254,14 +254,12 @@ public class Main extends Application {
                         label.setPadding(new Insets(1));
                         label.setTextAlignment(TextAlignment.CENTER);
                         GridPane.setHalignment(label, HPos.LEFT);
-                        if (colIndexDates > 4) label.setTextFill(Color.RED);
-                        //todo set the bg for "today"
+                        if (colIndexDates > 4) label.setStyle("-fx-text-fill: red");
+
                         if (dates.getYear() == LocalDateTime.now().getYear() &
                                 dates.getMonth().equalsIgnoreCase(LocalDateTime.now().getMonth().toString()) == true &
                                 dates.getDay() == LocalDateTime.now().getDayOfMonth())
-                            label.setBackground(new Background
-                                    (new BackgroundFill
-                                            (Color.LIGHTGREEN, CornerRadii.EMPTY, Insets.EMPTY)));
+                            label.setStyle("-fx-background-color: royalblue");
                         datesTable.add(label, colIndexDates, rowIndexDates);
                         colIndexDates = 0;
                         rowIndexDates++;
@@ -273,14 +271,12 @@ public class Main extends Application {
                         label.setPadding(new Insets(1));
                         label.setTextAlignment(TextAlignment.CENTER);
                         GridPane.setHalignment(label, HPos.LEFT);
-                        if (colIndexDates > 4) label.setTextFill(Color.RED);
-                        //todo set the bg for "today"
+                        if (colIndexDates > 4) label.setStyle("-fx-text-fill: red");
+
                         if (dates.getYear() == LocalDateTime.now().getYear() &
                                 dates.getMonth().equalsIgnoreCase(LocalDateTime.now().getMonth().toString()) == true &
                                 dates.getDay() == LocalDateTime.now().getDayOfMonth())
-                            label.setBackground(new Background
-                                    (new BackgroundFill
-                                            (Color.LIGHTGREEN, CornerRadii.EMPTY, Insets.EMPTY)));
+                            label.setStyle("-fx-background-color: royalblue");
                         datesTable.add(label, colIndexDates, rowIndexDates);
                         colIndexDates++;
                         System.out.printf("%4d", dates.getDay());
@@ -298,17 +294,119 @@ public class Main extends Application {
             t.add(datesTable, colIndex, rowIndex);
         }
 
-        rootCal.getChildren().add(t);
+        ScrollPane scroller = new ScrollPane(calendarView);
+        rootGrid.getChildren().add(scroller);
+        scroller.setPrefViewportHeight(600);
+        scroller.setPrefViewportWidth(700);
+//        System.out.println("INFO!!!!!!!!!!!!!!!! ");
 
+        rootCal.getChildren().add(t);
         tp.getTabs().addAll(tabGrid, tabCal);
 
 
-//        tp.getTabs().addAll(tabGrid);
+        addEvent.setPrefWidth(120);
+        AnchorPane.setTopAnchor(tp, 40.0);
+        AnchorPane.setLeftAnchor(tp, 10.0);
+        AnchorPane.setRightAnchor(tp, 10.0);
+        AnchorPane.setBottomAnchor(tp, 10.0);
+        AnchorPane.setTopAnchor(addEvent, 5.0);
+        AnchorPane.setLeftAnchor(addEvent, 10.0);
 
-        Scene scene = new Scene(tp);
+
+        ap.getChildren().addAll(tp, addEvent);
+
+        Scene scene = new Scene(ap, 700,700);
+
+
 //        scene.getStylesheets().add(getClass().getResource("calendar-view.css").toExternalForm());
         primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
         primaryStage.show();
+
+        addEvent.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+
+                Stage addEventStage = new Stage();
+                VBox popupAdd = new VBox();
+                Button submit = new Button("Сохранить");
+                Button cancel  = new Button("Отмена");
+                popupAdd.setAlignment(Pos.CENTER);
+
+                GridPane timeSet = new GridPane();
+                timeSet.setMaxHeight(300);
+                timeSet.setMaxWidth(400);
+                timeSet.setAlignment(Pos.CENTER);
+                DatePicker pickDate = new DatePicker();
+
+                Spinner<Integer> pickHour = new Spinner();
+                pickHour.setEditable(true);
+                SpinnerValueFactory<Integer> hourFactory =
+                        new SpinnerValueFactory.IntegerSpinnerValueFactory(0,23,0);
+                pickHour.setValueFactory(hourFactory);
+
+                Spinner<Integer> pickMinutes = new Spinner();
+                pickMinutes.setEditable(true);
+                SpinnerValueFactory<Integer> minutesFactory =
+                        new SpinnerValueFactory.IntegerSpinnerValueFactory(0,59,0);
+                pickMinutes.setValueFactory(minutesFactory);
+
+                GridPane.setRowIndex(pickDate, 1);
+                GridPane.setRowIndex(pickHour,2);
+                GridPane.setRowIndex(pickMinutes,3);
+
+                TextArea ta = new TextArea();
+                ta.setMaxWidth(400);
+                ta.setEditable(true);
+
+
+
+                submit.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent actionEvent) {
+
+                        try {
+                            LocalDate localDate = pickDate.getValue();
+                            System.out.println("FROM AN ACTION EVENT: " + localDate);
+                            int year = localDate.getYear();
+                            int month = localDate.getMonthValue();
+                            int day = localDate.getDayOfMonth();
+                            int hour = pickHour.getValue();
+                            int minute = pickMinutes.getValue();
+                            String note = ta.getText();
+                            CreateXmlFile.addElement(year, month, day, hour, minute, note);
+                            addEventStage.close();
+                        } catch (ParserConfigurationException e) {
+                            e.printStackTrace();
+                        } catch (TransformerException e) {
+                            e.printStackTrace();
+                        } catch (SAXException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
+
+                cancel.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent actionEvent) {
+                        addEventStage.close();
+                    }
+                });
+
+                timeSet.getChildren().addAll(pickDate, pickHour, pickMinutes, ta);
+                popupAdd.getChildren().addAll(timeSet, submit, cancel);
+                Scene addScene = new Scene (popupAdd, 500,500);
+                addEventStage.setScene(addScene);
+                addEventStage.setTitle("Новое событие");
+                addEventStage.setResizable(false);
+                addEventStage.show();
+                System.out.println("Hello!");
+            }
+        });
+
 
     }
 
@@ -416,8 +514,15 @@ public class Main extends Application {
     }
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        CreateXmlFile.create();
         launch(args);
+
+
+
+
+//        ToXmlFile.readXml();
+//        ToXmlFile.updateXml();
     }
 
 //    public static class Console extends OutputStream {
@@ -433,6 +538,4 @@ public class Main extends Application {
 //            output.appendText(String.valueOf((char) i));
 //        }
 //    }
-
-
 }

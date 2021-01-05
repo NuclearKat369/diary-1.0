@@ -2,14 +2,19 @@ package sample;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.time.format.TextStyle;
 import java.util.*;
 
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.*;
@@ -23,6 +28,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
+import javafx.util.converter.LocalDateStringConverter;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -55,11 +61,13 @@ public class Main extends Application  {
     private final List<TimeSlot> timeSlots = new ArrayList<>();
 
     @Override
-    public void start(Stage primaryStage) throws IOException {
+    public void start(Stage primaryStage) throws IOException,
+            XPathExpressionException, ParserConfigurationException, SAXException {
 
         AnchorPane ap = new AnchorPane();
         TabPane tp = new TabPane();
         Button addEvent = new Button("Добавить событие");
+        Button updateEvents = new Button("Обновить данные");
 
         tp.setLayoutX(10);
         tp.setLayoutY(10);
@@ -95,12 +103,28 @@ public class Main extends Application  {
                  startTime = startTime.plus(slotLength)) {
 
 
-                TimeSlot timeSlot = new TimeSlot(startTime, slotLength);
+                TimeSlot timeSlot = new TimeSlot(startTime, slotLength, date);
+
+                int year = date.getYear();
+                int month = date.getMonthValue();
+                int day = date.getDayOfMonth();
+                int hour = startTime.getHour();
+                int minute = startTime.getMinute();
+
+                String text = CreateXmlFile.searchXml(year, month, day, hour, minute);
+                if (text != "") {
+                    Label label = new Label(text);
+                    calendarView.add(label, timeSlot.getDayOfWeek().getValue(), slotIndex);
+                }
+
+                System.out.println("CHECK THE SEARCH: " + CreateXmlFile.searchXml(year, month, day, hour, minute));
+
                 timeSlots.add(timeSlot);
 
-                registerDragHandlers(timeSlot, mouseAnchor);
+//                registerDragHandlers(timeSlot, mouseAnchor);
 
                 calendarView.add(timeSlot.getView(), timeSlot.getDayOfWeek().getValue(), slotIndex);
+
                 slotIndex++ ;
             }
         }
@@ -154,7 +178,6 @@ public class Main extends Application  {
         int colIndexMonth = 0;
         int rowIndexMonth = 2;
         for (int month = 1; month <= 12; month++) {
-
 
                 //month name
                 dates.setMonth(cal.withMonth(month).getMonth().getDisplayName(TextStyle.FULL, Locale.UK));
@@ -298,7 +321,7 @@ public class Main extends Application  {
         rootGrid.getChildren().add(scroller);
         scroller.setPrefViewportHeight(600);
         scroller.setPrefViewportWidth(700);
-//        System.out.println("INFO!!!!!!!!!!!!!!!! ");
+
 
         rootCal.getChildren().add(t);
         tp.getTabs().addAll(tabGrid, tabCal);
@@ -311,9 +334,11 @@ public class Main extends Application  {
         AnchorPane.setBottomAnchor(tp, 10.0);
         AnchorPane.setTopAnchor(addEvent, 5.0);
         AnchorPane.setLeftAnchor(addEvent, 10.0);
+        AnchorPane.setTopAnchor(updateEvents, 5.0);
+        AnchorPane.setLeftAnchor(updateEvents, 150.0);
 
 
-        ap.getChildren().addAll(tp, addEvent);
+        ap.getChildren().addAll(tp, addEvent, updateEvents);
 
         Scene scene = new Scene(ap, 700,700);
 
@@ -340,51 +365,66 @@ public class Main extends Application  {
                 DatePicker pickDate = new DatePicker();
 
                 Spinner<Integer> pickHour = new Spinner();
-                pickHour.setEditable(true);
+                pickHour.setEditable(false);
                 SpinnerValueFactory<Integer> hourFactory =
-                        new SpinnerValueFactory.IntegerSpinnerValueFactory(0,23,0);
+                        new SpinnerValueFactory.IntegerSpinnerValueFactory(0,23,LocalTime.now().getHour());
                 pickHour.setValueFactory(hourFactory);
 
+
                 Spinner<Integer> pickMinutes = new Spinner();
-                pickMinutes.setEditable(true);
+                pickMinutes.setEditable(false);
                 SpinnerValueFactory<Integer> minutesFactory =
-                        new SpinnerValueFactory.IntegerSpinnerValueFactory(0,59,0);
+                        new SpinnerValueFactory.IntegerSpinnerValueFactory(0,59,LocalTime.now().getMinute());
                 pickMinutes.setValueFactory(minutesFactory);
 
-                GridPane.setRowIndex(pickDate, 1);
-                GridPane.setRowIndex(pickHour,2);
-                GridPane.setRowIndex(pickMinutes,3);
+                Label inputText = new Label("Введите текст:");
+                Label chooseDate = new Label("Выберите дату и время: ");
+                Label chooseHour = new Label("Часы");
+                Label chooseMinutes = new Label("Минуты");
+
+                GridPane.setRowIndex(chooseDate,1);
+                GridPane.setRowIndex(pickDate, 2);
+
+                GridPane.setRowIndex(chooseHour,3);
+                GridPane.setRowIndex(pickHour,4);
+
+                GridPane.setRowIndex(chooseMinutes, 5);
+                GridPane.setRowIndex(pickMinutes,6);
 
                 TextArea ta = new TextArea();
                 ta.setMaxWidth(400);
                 ta.setEditable(true);
 
-
+                submit.disableProperty().bind(Bindings.isEmpty(ta.textProperty())
+                .or(Bindings.isEmpty(pickDate.getProperties()))
+                        .or(Bindings.isEmpty(pickHour.getProperties()))
+                        .or(Bindings.isEmpty(pickMinutes.getProperties())));
 
                 submit.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent actionEvent) {
 
                         try {
-                            LocalDate localDate = pickDate.getValue();
-                            System.out.println("FROM AN ACTION EVENT: " + localDate);
-                            int year = localDate.getYear();
-                            int month = localDate.getMonthValue();
-                            int day = localDate.getDayOfMonth();
-                            int hour = pickHour.getValue();
-                            int minute = pickMinutes.getValue();
-                            String note = ta.getText();
-                            CreateXmlFile.addElement(year, month, day, hour, minute, note);
-                            addEventStage.close();
-                        } catch (ParserConfigurationException e) {
-                            e.printStackTrace();
-                        } catch (TransformerException e) {
-                            e.printStackTrace();
-                        } catch (SAXException e) {
-                            e.printStackTrace();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                                LocalDate localDate = pickDate.getValue();
+                                System.out.println("FROM AN ACTION EVENT: " + localDate);
+                                int year = localDate.getYear();
+                                int month = localDate.getMonthValue();
+                                int day = localDate.getDayOfMonth();
+                                int hour = pickHour.getValue();
+                                int minute = pickMinutes.getValue();
+                                String note = ta.getText();
+                                CreateXmlFile.addElement(year, month, day, hour, minute, note);
+                                addEventStage.close();
+                            } catch (ParserConfigurationException e) {
+                                e.printStackTrace();
+                            } catch (TransformerException e) {
+                                e.printStackTrace();
+                            } catch (SAXException e) {
+                                e.printStackTrace();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
 
                     }
                 });
@@ -396,39 +436,57 @@ public class Main extends Application  {
                     }
                 });
 
-                timeSet.getChildren().addAll(pickDate, pickHour, pickMinutes, ta);
-                popupAdd.getChildren().addAll(timeSet, submit, cancel);
+                timeSet.getChildren().addAll(pickDate, pickHour, pickMinutes,
+                        ta, chooseMinutes, chooseHour, chooseDate);
+                popupAdd.getChildren().addAll(inputText, timeSet, submit, cancel);
                 Scene addScene = new Scene (popupAdd, 500,500);
                 addEventStage.setScene(addScene);
                 addEventStage.setTitle("Новое событие");
                 addEventStage.setResizable(false);
                 addEventStage.show();
-                System.out.println("Hello!");
             }
         });
 
+        updateEvents.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                try {
+                    start(primaryStage);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (XPathExpressionException e) {
+                    e.printStackTrace();
+                } catch (ParserConfigurationException e) {
+                    e.printStackTrace();
+                } catch (SAXException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
     }
 
 
     // Registers handlers on the time slot to manage selecting a range of slots in the grid.
 
-    private void registerDragHandlers(TimeSlot timeSlot, ObjectProperty<TimeSlot> mouseAnchor) {
-        timeSlot.getView().setOnDragDetected(event -> {
-            mouseAnchor.set(timeSlot);
-            timeSlot.getView().startFullDrag();
-            timeSlots.forEach(slot ->
-                    slot.setSelected(slot == timeSlot));
-        });
+//    private void registerDragHandlers(TimeSlot timeSlot, ObjectProperty<TimeSlot> mouseAnchor) {
+//        timeSlot.getView().setOnDragDetected(event -> {
+//            mouseAnchor.set(timeSlot);
+//            timeSlot.getView().startFullDrag();
+//            timeSlots.forEach(slot ->
+//                    slot.setSelected(slot == timeSlot));
+//        });
+//
+//        timeSlot.getView().setOnMouseDragEntered(event -> {
+//            TimeSlot startSlot = mouseAnchor.get();
+//            timeSlots.forEach(slot ->
+//                    slot.setSelected(isBetween(slot, startSlot, timeSlot)));
+//        });
+//
+//        timeSlot.getView().setOnMouseReleased(event -> mouseAnchor.set(null));
+//    }
 
-        timeSlot.getView().setOnMouseDragEntered(event -> {
-            TimeSlot startSlot = mouseAnchor.get();
-            timeSlots.forEach(slot ->
-                    slot.setSelected(isBetween(slot, startSlot, timeSlot)));
-        });
 
-        timeSlot.getView().setOnMouseReleased(event -> mouseAnchor.set(null));
-    }
 
     // Utility method that checks if testSlot is "between" startSlot and endSlot
     // Here "between" means in the visual sense in the grid: i.e. does the time slot
@@ -463,6 +521,7 @@ public class Main extends Application  {
         private final LocalDateTime start ;
         private final Duration duration ;
         private final Region view ;
+        private final LocalDate date;
 
         private final BooleanProperty selected = new SimpleBooleanProperty();
 
@@ -478,13 +537,15 @@ public class Main extends Application  {
             selectedProperty().set(selected);
         }
 
-        public TimeSlot(LocalDateTime start, Duration duration) {
+        public TimeSlot(LocalDateTime start, Duration duration, LocalDate date) {
             this.start = start ;
             this.duration = duration ;
+            this.date = date;
 
             view = new Region();
             view.setMinSize(80, 20);
             view.getStyleClass().add("time-slot");
+
 
 //            selectedProperty().addListener((obs, wasSelected, isSelected) ->
 //                    view.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, isSelected));
@@ -514,8 +575,9 @@ public class Main extends Application  {
     }
 
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         CreateXmlFile.create();
+        CreateXmlFile.readXml();
         launch(args);
 
 

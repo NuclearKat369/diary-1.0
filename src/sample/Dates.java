@@ -1,7 +1,5 @@
 package sample;
 
-import java.util.StringTokenizer;
-
 public class Dates {
 
     private int year, day, monthNumber, hour, minute;

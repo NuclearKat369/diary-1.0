@@ -1,4 +1,4 @@
-package sample;
+package com.company;
 
 public class Controller {
 }

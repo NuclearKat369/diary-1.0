@@ -1,4 +1,4 @@
-package sample;
+package com.company;
 
 import java.awt.*;
 import java.io.File;
@@ -421,6 +421,13 @@ public class Main extends Application {
                 Button submit = new Button("Сохранить");
                 Button cancel = new Button("Отмена");
                 popupAdd.setAlignment(Pos.CENTER);
+                popupAdd.setStyle("-fx-font: 10pt \"Courier New\"; " +
+                        "-fx-font-weight: bold; -fx-background-color: #cde0ff");
+
+                submit.setPrefWidth(150);
+                cancel.setPrefWidth(150);
+                submit.setStyle("-fx-font: 10pt \"Courier New\"; -fx-font-weight: bold; -fx-background-color: #98ccff");
+                cancel.setStyle("-fx-font: 10pt \"Courier New\"; -fx-font-weight: bold");
 
                 GridPane timeSet = new GridPane();
                 timeSet.setMaxHeight(300);

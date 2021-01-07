@@ -1,4 +1,4 @@
-package sample;
+package com.company;
 
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
@@ -171,6 +171,7 @@ public class CreateXmlFile {
         return note;
     }
 
+    // Поиск событий, приходящихся на один день, на основании полученных данных строится график занятости
     public static int searchXmlNumberOfEvents(int y, int m, int d) throws XPathExpressionException,
             ParserConfigurationException, IOException, SAXException {
 

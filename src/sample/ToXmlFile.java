@@ -13,14 +13,14 @@ import javax.xml.xpath.*;
 import java.io.File;
 import java.io.IOException;
 
-public class CreateXmlFile {
+public class ToXmlFile {
     public static final String xmlFilePath = "C:\\Users\\User\\Documents\\xmlfile.xml";
 
-    public CreateXmlFile() {
+    public ToXmlFile() {
     }
 
     // Создание XML-файла, если его ещё не существует
-    public static void create() {
+    public static void createXml() {
         try {
 
             DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
@@ -156,14 +156,14 @@ public class CreateXmlFile {
                 if (0 <= min & min <= 29) {
                     // Минутам меньше 10 спереди добавляется 0
                     if (checkMinutes < 10) {
-                        note = " :0" + checkMinutes + " | " + el.getAttribute("note") + "\n" + note;
+                        note = note + "\n" + " :0" + checkMinutes + " | " + el.getAttribute("note");
                     } else if (10 <= checkMinutes & checkMinutes < 30) {
-                        note = ":" + checkMinutes + "| " + el.getAttribute("note") + "\n" + note;
+                        note = note + "\n" + ":" + checkMinutes + "| " + el.getAttribute("note");
                     }
                 //проверяет, попадают ли минуты события в слот 30 - 59 мин
                 } else if (30 <= min & min <= 59) {
                     if (Integer.parseInt(el.getAttribute("minute")) >= 30) {
-                        note = ":" + checkMinutes + "| " + el.getAttribute("note") + "\n" + note;
+                        note = note + "\n" + ":" + checkMinutes + "| " + el.getAttribute("note");
                     }
                 }
             }

@@ -29,10 +29,13 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
@@ -109,11 +112,12 @@ public class Main extends Application {
                 int hour = startTime.getHour();
                 int minute = startTime.getMinute();
 
-                String text = CreateXmlFile.searchXml(year, month, day, hour, minute);
+                String text = ToXmlFile.searchXml(year, month, day, hour, minute);
                 if (text != "") {
                     Label label = new Label(text);
                     scheduleGrid.add(label, timeSlot.getDayOfWeek().getValue(), slotIndex);
                     label.setStyle("-fx-font-size: 9pt; -fx-font-weight: normal");
+                    label.setWrapText(true);
                 }
 
                 timeSlots.add(timeSlot);
@@ -155,7 +159,7 @@ public class Main extends Application {
         ScrollPane scroller = new ScrollPane(scheduleGrid);
         rootGrid.getChildren().add(scroller);
         scroller.setPrefViewportHeight(590);
-        scroller.setPrefViewportWidth(700);
+        scroller.setPrefViewportWidth(650);
 
         // Вкладка №2
         Tab calendarTab = new Tab("Календарь");
@@ -342,7 +346,7 @@ public class Main extends Application {
             int year = date.getYear();
             int month = date.getMonthValue();
             int day = date.getDayOfMonth();
-            dutyCounter[i] = CreateXmlFile.searchXmlNumberOfEvents(year,month,day);
+            dutyCounter[i] = ToXmlFile.searchXmlNumberOfEvents(year,month,day);
             i++;
             }
 
@@ -412,6 +416,8 @@ public class Main extends Application {
 
         anchorPane.getChildren().addAll(tabPane, addEvent, removeEvent, updateEvents, menuBar);
 
+        // Действия кнопок
+        // Кнопка "Добавить событие" вызывает новое окно, где выбираются параметры сохраняемого события
         addEvent.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
@@ -421,6 +427,13 @@ public class Main extends Application {
                 Button submit = new Button("Сохранить");
                 Button cancel = new Button("Отмена");
                 popupAdd.setAlignment(Pos.CENTER);
+                popupAdd.setStyle("-fx-font: 10pt \"Courier New\"; -fx-font-weight: bold;" +
+                        "-fx-background-color: #d5e8ff");
+
+                submit.setPrefWidth(150);
+                cancel.setPrefWidth(150);
+                submit.setStyle("-fx-font: 10pt \"Courier New\"; -fx-font-weight: bold; -fx-background-color: #98ccff");
+                cancel.setStyle("-fx-font: 10pt \"Courier New\"; -fx-font-weight: bold");
 
                 GridPane timeSet = new GridPane();
                 timeSet.setMaxHeight(300);
@@ -466,6 +479,7 @@ public class Main extends Application {
                 ta.setMaxWidth(400);
                 ta.setEditable(true);
 
+                // Кнопка "Сохранить" будет неактивна, если не заполнена заметка и не выбрана дата
                 submit.disableProperty().bind(Bindings.isEmpty(ta.textProperty())
                         .or(Bindings.isEmpty(pickDate.getProperties()))
                         .or(Bindings.isEmpty(pickHour.getProperties()))
@@ -483,7 +497,7 @@ public class Main extends Application {
                             int hour = pickHour.getValue();
                             int minute = pickMinutes.getValue();
                             String note = ta.getText();
-                            CreateXmlFile.addElement(year, month, day, hour, minute, note);
+                            ToXmlFile.addElement(year, month, day, hour, minute, note);
                             addEventStage.close();
                         } catch (ParserConfigurationException e) {
                             e.printStackTrace();
@@ -504,10 +518,19 @@ public class Main extends Application {
                     }
                 });
 
+                addEventStage.initModality(Modality.APPLICATION_MODAL); // Выплывающее окно делает неактивными остальные
                 timeSet.getChildren().addAll(pickDate, pickHour, pickMinutes,
                         ta, chooseMinutes, chooseHour, chooseDate);
                 popupAdd.getChildren().addAll(inputText, timeSet, submit, cancel);
                 Scene addScene = new Scene(popupAdd, 500, 500);
+
+                cancel.getScene().getAccelerators().put(new KeyCodeCombination(KeyCode.ESCAPE), new Runnable() {
+                    @Override
+                    public void run() {
+                        cancel.fire();
+                    }
+                });
+
                 addEventStage.setScene(addScene);
                 addEventStage.setTitle("Новое событие");
                 addEventStage.setResizable(false);
@@ -590,7 +613,7 @@ public class Main extends Application {
                             int hour = pickHour.getValue();
                             int minute = pickMinutes.getValue();
 
-                            CreateXmlFile.removeElement(year, month, day, hour, minute);
+                            sample.ToXmlFile.removeElement(year, month, day, hour, minute);
                             removeEventStage.close();
                         } catch (ParserConfigurationException e) {
                             e.printStackTrace();
@@ -613,10 +636,20 @@ public class Main extends Application {
                     }
                 });
 
+                removeEventStage.initModality(Modality.APPLICATION_MODAL);
+
                 timeSet.getChildren().addAll(pickDate, pickHour, pickMinutes,
                         chooseMinutes, chooseHour, chooseDate);
                 popupRemove.getChildren().addAll(inputText, timeSet, submit, cancel);
                 Scene addScene = new Scene(popupRemove, 400, 300);
+
+                cancel.getScene().getAccelerators().put(new KeyCodeCombination(KeyCode.ESCAPE), new Runnable() {
+                    @Override
+                    public void run() {
+                        cancel.fire();
+                    }
+                });
+
                 removeEventStage.setScene(addScene);
                 removeEventStage.setTitle("Удалить событие");
                 removeEventStage.setResizable(false);
@@ -693,7 +726,7 @@ public class Main extends Application {
 
 
     public static void main(String[] args) {
-        CreateXmlFile.create();
+        ToXmlFile.createXml();
 
         launch(args);
 

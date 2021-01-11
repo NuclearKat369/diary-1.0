@@ -70,6 +70,7 @@ public class ToXmlFile {
 
         root.appendChild(appointment);
 
+        // Создание атрибутов
         Attr year = document.createAttribute("year");
         Attr month = document.createAttribute("month");
         Attr day = document.createAttribute("day");
@@ -77,6 +78,7 @@ public class ToXmlFile {
         Attr minute = document.createAttribute("minute");
         Attr note = document.createAttribute("note");
 
+        // Заполнение атрибутов данными
         year.setValue(String.valueOf(y));
         month.setValue(String.valueOf(m));
         day.setValue(String.valueOf(d));
@@ -84,13 +86,13 @@ public class ToXmlFile {
         minute.setValue(String.valueOf(min));
         note.setValue(n);
 
+        // Добавление атрибутов элемент
         appointment.setAttributeNode(year);
         appointment.setAttributeNode(month);
         appointment.setAttributeNode(day);
         appointment.setAttributeNode(hour);
         appointment.setAttributeNode(minute);
         appointment.setAttributeNode(note);
-
 
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
@@ -100,29 +102,8 @@ public class ToXmlFile {
 
     }
 
-//    public static void readXml() {
-//
-//        try {
-//            DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
-//            DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
-//            Document document = documentBuilder.parse(new File(xmlFilePath));
-//
-//            document.getDocumentElement().normalize();
-//
-//            NodeList nList = document.getElementsByTagName("appointment");
-//
-//            for (int i = 0; i < nList.getLength(); i++) {
-//                Node nNode = nList.item(i);
-//
-//                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-//                    Element eElement = (Element) nNode;
-//                }
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-
+    // Поиск элементов по заданным атрибутам, возвращает все события на временной промежуток 30 минут
+    // в формате ":минуты| комментарий"
     public static String searchXml(int y, int m, int d, int h, int min) throws XPathExpressionException,
             ParserConfigurationException, IOException, SAXException {
 
@@ -140,6 +121,7 @@ public class ToXmlFile {
 
         String note = "";
 
+        // Поисковый запрос
         String xPathValue = "/appointments/appointment[@year='" + year + "' and @month='" + month +
                 "' and @day='" + day + "' and @hour='" + hour + "']";
 
@@ -186,18 +168,18 @@ public class ToXmlFile {
         String day = String.valueOf(d);
         int numberOfEvents = 0;
 
-
+        // Поисковый запрос
         String xPathValue = "/appointments/appointment[@year='" + year + "' and @month='" + month +
                 "' and @day='" + day + "']";
 
         XPathExpression expr = xPath.compile(xPathValue);
         NodeList nodeList = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
 
+        // Счётчик количества дел на день
         if (nodeList != null && nodeList.getLength() > 0) {
 
             for (int i = 0; i < nodeList.getLength(); i++) {
                 numberOfEvents++;
-
             }
         }
         return numberOfEvents;
@@ -222,6 +204,7 @@ public class ToXmlFile {
         String hour = String.valueOf(h);
         String minute = String.valueOf(min);
 
+        // Поисковый запрос
         String xPathValue = "/appointments/appointment[@year='" + year + "' and @month='" + month +
                 "' and @day='" + day + "' and @hour='" + hour + "' and @minute='" + minute + "']";
 
@@ -236,15 +219,9 @@ public class ToXmlFile {
                 el.getParentNode().removeChild(el);
             }
         }
-
         document.normalize();
         DOMSource domSource = new DOMSource(document);
         StreamResult streamResult = new StreamResult(new File(xmlFilePath));
         transformer.transform(domSource, streamResult);
-
     }
-
 }
-
-
-

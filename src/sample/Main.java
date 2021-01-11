@@ -10,6 +10,7 @@ import java.util.*;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.value.ObservableObjectValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.*;
@@ -61,7 +62,6 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws IOException,
             XPathExpressionException, ParserConfigurationException, SAXException {
 
-
         AnchorPane anchorPane = new AnchorPane();
         anchorPane.setStyle("-fx-font: 10pt \"Courier New\"; -fx-font-weight: bold");
 
@@ -69,7 +69,7 @@ public class Main extends Application {
 
         Button addEvent = new Button("Добавить событие");
         Button updateEvents = new Button("Обновить данные");
-        Button removeEvent = new Button ("Удалить событие");
+        Button removeEvent = new Button("Удалить событие");
 
         tabPane.setLayoutX(10);
         tabPane.setLayoutY(10);
@@ -83,7 +83,7 @@ public class Main extends Application {
         tabPane.setTabMinHeight(20);
         tabPane.setTabMinWidth(100);
 
-// Вкладка №1
+        // Вкладка №1
         Tab scheduleTab = new Tab("Расписание");
         Group rootGrid = new Group();
         scheduleTab.setContent(rootGrid);
@@ -168,6 +168,8 @@ public class Main extends Application {
 
         GridPane calendarGrid = new GridPane();
         calendarGrid.setGridLinesVisible(true);
+        calendarGrid.setScaleX(1.056);
+        calendarGrid.setScaleY(1.055);
 
         // Запрашивает у системы данные, какой сейчас год
         cal = LocalDateTime.now();
@@ -182,16 +184,17 @@ public class Main extends Application {
         int colIndex = 0;
         int rowIndex = 0;
 
-        calendarGrid.add(label, colIndex, rowIndex);
+        calendarGrid.add(label, colIndex + 1, rowIndex);
         rowIndex++;
 
-        //заполнение полей месяцами
+        // Заполнение полей месяцами
         int colIndexMonth = 0;
         int rowIndexMonth = 2;
         for (int month = 1; month <= 12; month++) {
 
-            //название месяца
-            dates.setMonth(cal.withMonth(month).getMonth().getDisplayName(TextStyle.FULL, Locale.UK));
+            // Название месяца
+            dates.setMonth(cal.withMonth(month).getMonth()
+                    .getDisplayName(TextStyle.FULL_STANDALONE, new Locale("ru")));
             dates.setMonthNumber(month);
             str = dates.getMonth();
             label = new Label(str);
@@ -199,7 +202,7 @@ public class Main extends Application {
             label.setTextAlignment(TextAlignment.CENTER);
             label.setStyle("-fx-font-weight: bold; -fx-background-color: PaleTurquoise");
 
-            GridPane.setHalignment(label, HPos.LEFT);
+            GridPane.setHalignment(label, HPos.CENTER);
 
             //расположение месяцев в календарном виде по 3 в ряд
             if (month % 3 != 0) {
@@ -224,12 +227,12 @@ public class Main extends Application {
             GridPane dow = new GridPane();
             dow.setGridLinesVisible(true);
 
-            //заполнение названий дней недели
+            // Заполнение названий дней недели
             for (int i = 0; i < 7; i++) {
                 int dowColInd = i;
                 Calendar temp = Calendar.getInstance();
                 temp.set(Calendar.DAY_OF_WEEK, i + 2);
-                label = new Label(temp.getDisplayName(temp.DAY_OF_WEEK, Calendar.SHORT, Locale.ENGLISH));
+                label = new Label(temp.getDisplayName(temp.DAY_OF_WEEK, Calendar.SHORT, new Locale("ru")));
                 label.setPadding(new Insets(1));
                 label.setTextAlignment(TextAlignment.CENTER);
                 if (dowColInd > 4) label.setTextFill(Color.RED);
@@ -241,8 +244,7 @@ public class Main extends Application {
 
             rowIndex++;
 
-
-            //заполнение дней в месяце
+            // Заполнение дней в месяце
             GridPane datesTable = new GridPane();
             datesTable.setGridLinesVisible(true);
 
@@ -254,7 +256,6 @@ public class Main extends Application {
             String[] calendarTable = new String[42];
 
             for (int n = 0; n < calendarTable.length; n++) {
-
 
                 n += cal.withMonth(month).withDayOfMonth(1).getDayOfWeek().getValue() - 1;
 
@@ -268,7 +269,7 @@ public class Main extends Application {
 
                 YearMonth yearMonth = YearMonth.of(dates.getYear(), dates.getMonthNumber());
 
-                //проверка, является ли день началом недели, если да, то отображение идёт с новой строки
+                // Проверка, является ли день началом недели, если да, то отображение идёт с новой строки
                 for (int i = 1; i <= yearMonth.lengthOfMonth(); i++, n++) {
                     dates.setDay(i);
                     dates.setDayOfWeek(cal.withYear(dates.getYear())
@@ -282,27 +283,40 @@ public class Main extends Application {
                         label.setPadding(new Insets(1));
                         label.setTextAlignment(TextAlignment.CENTER);
                         GridPane.setHalignment(label, HPos.LEFT);
-                        if (colIndexDates > 4) label.setStyle("-fx-text-fill: red");
+                        // Выходные дни подсвечиваются красным цветом
+                        if (colIndexDates > 4)
+                            label.setStyle("-fx-text-fill: red");
 
+                        // Текущий день подсвечивается цветом
                         if (dates.getYear() == LocalDateTime.now().getYear() &
-                                dates.getMonth().equalsIgnoreCase(LocalDateTime.now().getMonth().toString()) == true &
+                                dates.getMonth()
+                                        .equalsIgnoreCase(LocalDateTime.now()
+                                                .getMonth()
+                                                .getDisplayName(TextStyle.FULL_STANDALONE,
+                                                        new Locale("ru"))) &
                                 dates.getDay() == LocalDateTime.now().getDayOfMonth())
                             label.setStyle("-fx-background-color: royalblue");
                         datesTable.add(label, colIndexDates, rowIndexDates);
                         colIndexDates = 0;
                         rowIndexDates++;
-//                        System.out.printf("%4d", dates.getDay());
-//                        System.out.println();
+
                     } else {
                         str = Integer.toString(dates.getDay());
                         label = new Label(str);
                         label.setPadding(new Insets(1));
                         label.setTextAlignment(TextAlignment.CENTER);
                         GridPane.setHalignment(label, HPos.LEFT);
-                        if (colIndexDates > 4) label.setStyle("-fx-text-fill: red");
+                        // Выходные дни подсвечиваются красным цветом
+                        if (colIndexDates > 4)
+                            label.setStyle("-fx-text-fill: red");
 
+                        // Текущий день подсвечивается цветом
                         if (dates.getYear() == LocalDateTime.now().getYear() &
-                                dates.getMonth().equalsIgnoreCase(LocalDateTime.now().getMonth().toString()) == true &
+                                dates.getMonth()
+                                        .equalsIgnoreCase(LocalDateTime.now()
+                                                .getMonth()
+                                                .getDisplayName(TextStyle.FULL_STANDALONE,
+                                                        new Locale("ru"))) &
                                 dates.getDay() == LocalDateTime.now().getDayOfMonth())
                             label.setStyle("-fx-background-color: royalblue");
                         datesTable.add(label, colIndexDates, rowIndexDates);
@@ -319,7 +333,6 @@ public class Main extends Application {
         rootCal.getChildren().add(calendarGrid);
 
         //Вкладка №3
-
         Tab chartTab = new Tab("График занятости");
         Group rootChart = new Group();
         chartTab.setContent(rootChart);
@@ -329,28 +342,28 @@ public class Main extends Application {
         xAxis.setLabel("День недели");
         yAxis.setLabel("Количество дел");
 
-        //создание графика
+        // Создание графика
         LineChart<String, Number> lineChart = new LineChart<String, Number>(xAxis, yAxis);
 
-        lineChart.setTitle("График загруженности по дням недели");
+        lineChart.setTitle("График загруженности по дням недели\n\n");
 
-        //создание серии данных
+        // Создание серии данных для построения графика
         XYChart.Series chart = new XYChart.Series();
         lineChart.setStyle("-fx-font: 10pt \"Courier New\"; -fx-font-weight: bold");
 
-        //определение количества дел на каждый день недели для заполнения данных по оси Y графика
-        int [] dutyCounter = new int[7];
+        // Определение количества дел на каждый день недели для заполнения данных по оси Y графика
+        int[] dutyCounter = new int[7];
         int i = 0;
         for (LocalDate date = startOfWeek; !date.isAfter(endOfWeek); date = date.plusDays(1)) {
 
             int year = date.getYear();
             int month = date.getMonthValue();
             int day = date.getDayOfMonth();
-            dutyCounter[i] = ToXmlFile.searchXmlNumberOfEvents(year,month,day);
+            dutyCounter[i] = ToXmlFile.searchXmlNumberOfEvents(year, month, day);
             i++;
-            }
+        }
 
-        //присвоение значения контрольным точкам
+        // Присвоение значения контрольным точкам
         chart.getData().add(new XYChart.Data("Пн", dutyCounter[0]));
         chart.getData().add(new XYChart.Data("Вт", dutyCounter[1]));
         chart.getData().add(new XYChart.Data("Ср", dutyCounter[2]));
@@ -362,7 +375,7 @@ public class Main extends Application {
         lineChart.getData().add(chart);
         rootChart.getChildren().add(lineChart);
 
-        //Меню
+        // Меню
         MenuBar menuBar = new MenuBar();
         menuBar.setStyle("-fx-font: 10pt \"Courier New\"; -fx-font-weight: bold");
         Menu menuFile = new Menu("Файл");
@@ -395,11 +408,13 @@ public class Main extends Application {
 
         menuHelp.getItems().add(menuItemHelp);
 
+        // Горячие клавиши
         menuItemQuit.setAccelerator(KeyCombination.keyCombination("CTRL+Q"));
         menuItemHelp.setAccelerator(KeyCombination.keyCombination("CTRL+H"));
 
         tabPane.getTabs().addAll(scheduleTab, calendarTab, chartTab);
 
+        // Расположение элементов на AnchorPane
         addEvent.setPrefWidth(150);
         updateEvents.setPrefWidth(150);
         removeEvent.setPrefWidth(150);
@@ -439,22 +454,28 @@ public class Main extends Application {
                 timeSet.setMaxHeight(300);
                 timeSet.setMaxWidth(400);
                 timeSet.setAlignment(Pos.CENTER);
+
+                // Выбор даты
                 DatePicker pickDate = new DatePicker();
-                pickDate.setDayCellFactory(p -> new DateCell(){
-                    public void updateItem(LocalDate date, boolean empty){
+
+                // Запрет выбора даты, предшествующей текущей
+                pickDate.setDayCellFactory(p -> new DateCell() {
+                    public void updateItem(LocalDate date, boolean empty) {
                         super.updateItem(date, empty);
                         LocalDate today = LocalDate.now();
-                        setDisable(empty || date.compareTo(today)<0);
+                        setDisable(empty || date.compareTo(today) < 0);
                     }
                 });
 
+                // Выбор времени:
+                // Часы
                 Spinner<Integer> pickHour = new Spinner();
                 pickHour.setEditable(false);
                 SpinnerValueFactory<Integer> hourFactory =
                         new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 23, LocalTime.now().getHour());
                 pickHour.setValueFactory(hourFactory);
 
-
+                // Минуты
                 Spinner<Integer> pickMinutes = new Spinner();
                 pickMinutes.setEditable(false);
                 SpinnerValueFactory<Integer> minutesFactory =
@@ -524,6 +545,7 @@ public class Main extends Application {
                 popupAdd.getChildren().addAll(inputText, timeSet, submit, cancel);
                 Scene addScene = new Scene(popupAdd, 500, 500);
 
+                // Горячая клавиша, для быстрого выхода из окна и отмены можно нажать "Esc"
                 cancel.getScene().getAccelerators().put(new KeyCodeCombination(KeyCode.ESCAPE), new Runnable() {
                     @Override
                     public void run() {
@@ -545,8 +567,8 @@ public class Main extends Application {
                 Stage removeEventStage = new Stage();
                 VBox popupRemove = new VBox();
                 popupRemove.setBackground(new Background(new BackgroundImage(
-                        new Image("cancel.png"), BackgroundRepeat.REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT,
-                        BackgroundSize.DEFAULT)));
+                        new Image("cancel.png"), BackgroundRepeat.REPEAT,
+                        BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, BackgroundSize.DEFAULT)));
                 Button submit = new Button("Сохранить");
                 Button cancel = new Button("Отмена");
                 submit.setPrefWidth(150);
@@ -560,14 +582,19 @@ public class Main extends Application {
                 timeSet.setMaxHeight(300);
                 timeSet.setMaxWidth(400);
                 timeSet.setAlignment(Pos.CENTER);
+
+                // Выбор даты
                 DatePicker pickDate = new DatePicker();
 
+                // Выбор времени
+                // Часы
                 Spinner<Integer> pickHour = new Spinner();
                 pickHour.setEditable(false);
                 SpinnerValueFactory<Integer> hourFactory =
                         new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 23, LocalTime.now().getHour());
                 pickHour.setValueFactory(hourFactory);
 
+                // Минуты
                 Spinner<Integer> pickMinutes = new Spinner();
                 pickMinutes.setEditable(false);
                 SpinnerValueFactory<Integer> minutesFactory =
@@ -597,6 +624,7 @@ public class Main extends Application {
                 GridPane.setRowIndex(chooseMinutes, 5);
                 GridPane.setRowIndex(pickMinutes, 6);
 
+                // Если какое-то из полей не заполнено, кнопка "Сохранить" будет неактивна
                 submit.disableProperty().bind(Bindings.isEmpty(pickDate.getProperties())
                         .or(Bindings.isEmpty(pickHour.getProperties()))
                         .or(Bindings.isEmpty(pickMinutes.getProperties())));
@@ -613,7 +641,7 @@ public class Main extends Application {
                             int hour = pickHour.getValue();
                             int minute = pickMinutes.getValue();
 
-                            sample.ToXmlFile.removeElement(year, month, day, hour, minute);
+                            ToXmlFile.removeElement(year, month, day, hour, minute);
                             removeEventStage.close();
                         } catch (ParserConfigurationException e) {
                             e.printStackTrace();
@@ -643,6 +671,7 @@ public class Main extends Application {
                 popupRemove.getChildren().addAll(inputText, timeSet, submit, cancel);
                 Scene addScene = new Scene(popupRemove, 400, 300);
 
+                // Горячая клавиша, для быстрого выхода из окна и отмены можно нажать "Esc"
                 cancel.getScene().getAccelerators().put(new KeyCodeCombination(KeyCode.ESCAPE), new Runnable() {
                     @Override
                     public void run() {
@@ -680,7 +709,6 @@ public class Main extends Application {
         primaryStage.getIcons().add(new Image("logo.png"));
         primaryStage.setResizable(false);
         primaryStage.show();
-
     }
 
     // Вспомогательный класс для определения временного промежутка при создании вкладки расписание
@@ -698,37 +726,19 @@ public class Main extends Application {
 
             view = new Region();
             view.setMinSize(80, 20);
-
-        }
-
-
-        public LocalDateTime getStart() {
-            return start;
-        }
-
-        public LocalTime getTime() {
-            return start.toLocalTime();
         }
 
         public DayOfWeek getDayOfWeek() {
             return start.getDayOfWeek();
         }
 
-        public Duration getDuration() {
-            return duration;
-        }
-
         public Node getView() {
             return view;
         }
-
     }
-
 
     public static void main(String[] args) {
         ToXmlFile.createXml();
-
         launch(args);
-
     }
 }

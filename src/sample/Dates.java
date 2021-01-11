@@ -2,17 +2,10 @@ package sample;
 
 public class Dates {
 
-    private int year, day, monthNumber, hour, minute;
+    private int year, day, monthNumber;
     private String month, dayOfWeek;
 
     public Dates(){
-
-    }
-
-    public Dates(int year, String month, int day) {
-        this.year = year;
-        this.month = month;
-        this.day = day;
     }
 
     public int getYear() {
@@ -39,13 +32,10 @@ public class Dates {
         this.month = month;
     }
 
-    public String getDayOfWeek() {
-        return dayOfWeek;
-    }
-
     public void setDayOfWeek(String dayOfWeek) {
         this.dayOfWeek = dayOfWeek;
     }
+
     public void setMonthNumber(int monthNumber){
         this.monthNumber = monthNumber;
     }
@@ -53,10 +43,4 @@ public class Dates {
     public int getMonthNumber(){
         return monthNumber;
     }
-
-//    public String getMonthByNumber(int number){
-//
-//    }
-
-
 }
